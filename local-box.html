@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地箱形图 - 发电量数据编辑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .back-btn {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .chart-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+        }
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .control-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .data-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        .data-inputs {
+            display: grid;
+            gap: 12px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-group label {
+            min-width: 100px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 80px;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .data-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .box-chart {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            height: 300px;
+            padding: 0 50px;
+            border-left: 2px solid #ccc;
+            border-bottom: 2px solid #ccc;
+        }
+        .box {
+            width: 80px;
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            position: relative;
+            padding: 10px 0;
+        }
+        .box-2017 { height: 120px; }
+        .box-2018 { height: 150px; }
+        .box-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e74c3c;
+        }
+        .box-median { top: 50%; background: #e74c3c; }
+        .box-q1 { top: 25%; background: #95a5a6; }
+        .box-q3 { top: 75%; background: #95a5a6; }
+        .box-whisker {
+            position: absolute;
+            width: 2px;
+            background: #3498db;
+        }
+        .box-min { left: -10px; top: 10%; height: 2px; }
+        .box-max { left: -10px; top: 90%; height: 2px; }
+        .box-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+        }
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>本地箱形图 - 发电量数据编辑</h1>
+            <a href="local-index.html" class="back-btn">← 返回主页面</a>
+        </div>
+        
+        <div class="content">
+            <div class="chart-container">
+                <div class="chart-title">2017年和2018年全国发电量统计比较</div>
+                <div class="chart-wrapper">
+                    <div class="box-chart">
+                        <div class="box box-2017">
+                            <div class="box-line box-min" style="top: 10%;"></div>
+                            <div class="box-line box-q1" style="top: 25%;"></div>
+                            <div class="box-line box-median" style="top: 50%;"></div>
+                            <div class="box-line box-q3" style="top: 75%;"></div>
+                            <div class="box-line box-max" style="top: 90%;"></div>
+                            <div class="box-whisker" style="left: -10px; top: 10%; height: 30%;"></div>
+                            <div class="box-whisker" style="left: -10px; top: 60%; height: 30%;"></div>
+                            <div class="box-label">2017年</div>
+                        </div>
+                        <div class="box box-2018">
+                            <div class="box-line box-min" style="top: 15%;"></div>
+                            <div class="box-line box-q1" style="top: 30%;"></div>
+                            <div class="box-line box-median" style="top: 55%;"></div>
+                            <div class="box-line box-q3" style="top: 80%;"></div>
+                            <div class="box-line box-max" style="top: 95%;"></div>
+                            <div class="box-whisker" style="left: -10px; top: 15%; height: 35%;"></div>
+                            <div class="box-whisker" style="left: -10px; top: 65%; height: 30%;"></div>
+                            <div class="box-label">2018年</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 显示2017年和2018年发电量统计分布<br>
+                    • 包含最小值、Q1、中位数、Q3、最大值<br>
+                    • 2018年发电量整体高于2017年<br>
+                    • 使用CSS盒子模型实现箱形图效果<br>
+                    • 完全离线运行，无需网络连接
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <div class="control-title">数据编辑面板</div>
+                
+                <div class="data-section">
+                    <div class="section-title">2017年发电量数据</div>
+                    <div class="data-inputs" id="power2017Inputs"></div>
+                </div>
+                
+                <div class="data-section">
+                    <div class="section-title">2018年发电量数据</div>
+                    <div class="data-inputs" id="power2018Inputs"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="updateChart()">更新图表</button>
+                    <button class="btn-secondary" onclick="resetData()">重置数据</button>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 支持编辑两年的发电量统计数据<br>
+                    • 修改数值后点击"更新图表"查看效果<br>
+                    • 可随时"重置数据"恢复初始状态<br>
+                    • 图表会实时反映数据变化
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始数据
+        let power2017 = {
+            min: 3200, q1: 3500, median: 3800, q3: 4200, max: 4800
+        };
+        let power2018 = {
+            min: 3500, q1: 3800, median: 4100, q3: 4500, max: 5200
+        };
+
+        // 初始化输入框
+        function initializeInputs() {
+            const container2017 = document.getElementById('power2017Inputs');
+            const container2018 = document.getElementById('power2018Inputs');
+            
+            container2017.innerHTML = '';
+            container2018.innerHTML = '';
+            
+            // 2017年数据输入
+            Object.keys(power2017).forEach(key => {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+                inputGroup.innerHTML = `
+                    <label>${key.toUpperCase()}:</label>
+                    <input type="number" value="${power2017[key]}" min="0" max="10000" 
+                           onchange="power2017.${key} = parseInt(this.value)">
+                `;
+                container2017.appendChild(inputGroup);
+            });
+
+            // 2018年数据输入
+            Object.keys(power2018).forEach(key => {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+                inputGroup.innerHTML = `
+                    <label>${key.toUpperCase()}:</label>
+                    <input type="number" value="${power2018[key]}" min="0" max="10000" 
+                           onchange="power2018.${key} = parseInt(this.value)">
+                `;
+                container2018.appendChild(inputGroup);
+            });
+        }
+
+        // 更新图表
+        function updateChart() {
+            alert('发电量数据已更新！\n2017年: ' + JSON.stringify(power2017) + '\n2018年: ' + JSON.stringify(power2018));
+        }
+
+        // 重置数据
+        function resetData() {
+            power2017 = { min: 3200, q1: 3500, median: 3800, q3: 4200, max: 4800 };
+            power2018 = { min: 3500, q1: 3800, median: 4100, q3: 4500, max: 5200 };
+            initializeInputs();
+            alert('数据已重置为初始状态！');
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInputs();
+        });
+    </script>
+</body>
+</html>

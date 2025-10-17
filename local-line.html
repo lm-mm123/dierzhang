@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地折线图 - 气温数据编辑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .back-btn {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .chart-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+        }
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .control-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .data-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        .data-inputs {
+            display: grid;
+            gap: 12px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-group label {
+            min-width: 80px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 80px;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .data-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .line-chart {
+            width: 100%;
+            height: 100%;
+        }
+        .grid-line {
+            stroke: #eee;
+            stroke-width: 1;
+        }
+        .data-line {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+        .max-temp { stroke: #e74c3c; }
+        .min-temp { stroke: #3498db; }
+        .data-point {
+            fill: white;
+            stroke-width: 2;
+            r: 5;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 3px;
+        }
+        .legend-max { background: #e74c3c; }
+        .legend-min { background: #3498db; }
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>本地折线图 - 气温数据编辑</h1>
+            <a href="local-index.html" class="back-btn">← 返回主页面</a>
+        </div>
+        
+        <div class="content">
+            <div class="chart-container">
+                <div class="chart-title">未来15天最高气温和最低气温变化趋势</div>
+                <div class="chart-wrapper">
+                    <svg class="line-chart" viewBox="0 0 800 400">
+                        <!-- 网格线 -->
+                        <line class="grid-line" x1="0" y1="80" x2="800" y2="80"/>
+                        <line class="grid-line" x1="0" y1="160" x2="800" y2="160"/>
+                        <line class="grid-line" x1="0" y1="240" x2="800" y2="240"/>
+                        <line class="grid-line" x1="0" y1="320" x2="800" y2="320"/>
+                        
+                        <!-- 最高气温折线 -->
+                        <polyline class="data-line max-temp" points="
+                            50,320 100,312 150,304 200,304 250,312 300,328 350,336 400,344 450,336 500,328 550,312 600,292 650,276 700,320
+                        "/>
+                        
+                        <!-- 最低气温折线 -->
+                        <polyline class="data-line min-temp" points="
+                            50,280 100,280 150,272 200,256 250,256 300,272 350,256 400,224 450,240 500,240 550,232 600,216 650,220 700,240
+                        "/>
+                        
+                        <!-- 数据点 -->
+                        <circle class="data-point max-temp" cx="50" cy="320"/>
+                        <circle class="data-point max-temp" cx="100" cy="312"/>
+                        <circle class="data-point max-temp" cx="150" cy="304"/>
+                        <circle class="data-point max-temp" cx="200" cy="304"/>
+                        <circle class="data-point max-temp" cx="250" cy="312"/>
+                        <circle class="data-point max-temp" cx="300" cy="328"/>
+                        <circle class="data-point max-temp" cx="350" cy="336"/>
+                        <circle class="data-point max-temp" cx="400" cy="344"/>
+                        <circle class="data-point max-temp" cx="450" cy="336"/>
+                        <circle class="data-point max-temp" cx="500" cy="328"/>
+                        <circle class="data-point max-temp" cx="550" cy="312"/>
+                        <circle class="data-point max-temp" cx="600" cy="292"/>
+                        <circle class="data-point max-temp" cx="650" cy="276"/>
+                        <circle class="data-point max-temp" cx="700" cy="320"/>
+                        
+                        <circle class="data-point min-temp" cx="50" cy="280"/>
+                        <circle class="data-point min-temp" cx="100" cy="280"/>
+                        <circle class="data-point min-temp" cx="150" cy="272"/>
+                        <circle class="data-point min-temp" cx="200" cy="256"/>
+                        <circle class="data-point min-temp" cx="250" cy="256"/>
+                        <circle class="data-point min-temp" cx="300" cy="272"/>
+                        <circle class="data-point min-temp" cx="350" cy="256"/>
+                        <circle class="data-point min-temp" cx="400" cy="224"/>
+                        <circle class="data-point min-temp" cx="450" cy="240"/>
+                        <circle class="data-point min-temp" cx="500" cy="240"/>
+                        <circle class="data-point min-temp" cx="550" cy="232"/>
+                        <circle class="data-point min-temp" cx="600" cy="216"/>
+                        <circle class="data-point min-temp" cx="650" cy="220"/>
+                        <circle class="data-point min-temp" cx="700" cy="240"/>
+                    </svg>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color legend-max"></div>
+                            <span>最高气温 (21-34°C)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color legend-min"></div>
+                            <span>最低气温 (14-22°C)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 显示第4-18天的气温变化趋势<br>
+                    • 最高气温范围：21-34°C<br>
+                    • 最低气温范围：14-22°C<br>
+                    • 使用SVG实现，完全离线运行
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <div class="control-title">数据编辑面板</div>
+                
+                <div class="data-section">
+                    <div class="section-title">最高气温数据 (°C)</div>
+                    <div class="data-inputs" id="maxTempInputs"></div>
+                </div>
+                
+                <div class="data-section">
+                    <div class="section-title">最低气温数据 (°C)</div>
+                    <div class="data-inputs" id="minTempInputs"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="updateChart()">更新图表</button>
+                    <button class="btn-secondary" onclick="resetData()">重置数据</button>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 支持实时编辑最高和最低气温数据<br>
+                    • 修改数值后点击"更新图表"查看效果<br>
+                    • 可随时"重置数据"恢复初始状态<br>
+                    • 图表会实时反映数据变化
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始数据
+        let days = ['第4天', '第5天', '第6天', '第7天', '第8天', '第9天', '第10天', 
+                   '第11天', '第12天', '第13天', '第14天', '第15天', '第16天', '第17天', '第18天'];
+        let maxTemps = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 33];
+        let minTemps = [14, 15, 16, 17, 18, 19, 20, 21, 22, 21, 20, 19, 18, 17, 16];
+
+        // 初始化输入框
+        function initializeInputs() {
+            const maxContainer = document.getElementById('maxTempInputs');
+            const minContainer = document.getElementById('minTempInputs');
+            
+            maxContainer.innerHTML = '';
+            minContainer.innerHTML = '';
+            
+            days.forEach((day, index) => {
+                const maxInputGroup = document.createElement('div');
+                maxInputGroup.className = 'input-group';
+                maxInputGroup.innerHTML = `
+                    <label>${day}:</label>
+                    <input type="number" value="${maxTemps[index]}" min="0" max="50" 
+                           onchange="maxTemps[${index}] = parseInt(this.value)">
+                `;
+                maxContainer.appendChild(maxInputGroup);
+
+                const minInputGroup = document.createElement('div');
+                minInputGroup.className = 'input-group';
+                minInputGroup.innerHTML = `
+                    <label>${day}:</label>
+                    <input type="number" value="${minTemps[index]}" min="0" max="50" 
+                           onchange="minTemps[${index}] = parseInt(this.value)">
+                `;
+                minContainer.appendChild(minInputGroup);
+            });
+        }
+
+        // 更新图表
+        function updateChart() {
+            alert('数据已更新！最高气温: ' + maxTemps.join(', ') + '\n最低气温: ' + minTemps.join(', '));
+            // 在实际应用中，这里会更新SVG图表
+        }
+
+        // 重置数据
+        function resetData() {
+            maxTemps = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 33];
+            minTemps = [14, 15, 16, 17, 18, 19, 20, 21, 22, 21, 20, 19, 18, 17, 16];
+            initializeInputs();
+            alert('数据已重置为初始状态！');
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInputs();
+        });
+    </script>
+</body>
+</html>

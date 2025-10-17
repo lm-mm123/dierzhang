@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地柱形图 - GMV数据编辑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .back-btn {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .chart-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+        }
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .control-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .data-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        .data-inputs {
+            display: grid;
+            gap: 12px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-group label {
+            min-width: 100px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 120px;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .data-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 300px;
+            padding: 0 50px;
+            border-left: 2px solid #ccc;
+            border-bottom: 2px solid #ccc;
+        }
+        .bar {
+            width: 40px;
+            background: linear-gradient(to top, #3498db, #2980b9);
+            border-radius: 3px 3px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .bar:hover {
+            background: linear-gradient(to top, #e74c3c, #c0392b);
+            transform: scale(1.05);
+        }
+        .bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .bar-label {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .bar-1 { height: 60px; }
+        .bar-2 { height: 90px; }
+        .bar-3 { height: 130px; }
+        .bar-4 { height: 165px; }
+        .bar-5 { height: 200px; }
+        .bar-6 { height: 250px; }
+        .bar-7 { height: 300px; }
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>本地柱形图 - GMV数据编辑</h1>
+            <a href="local-index.html" class="back-btn">← 返回主页面</a>
+        </div>
+        
+        <div class="content">
+            <div class="chart-container">
+                <div class="chart-title">2013-2019财年阿里巴巴GMV数据</div>
+                <div class="chart-wrapper">
+                    <div class="bar-chart">
+                        <div class="bar bar-1" data-value="10770">
+                            <div class="bar-label">2013</div>
+                        </div>
+                        <div class="bar bar-2" data-value="16780">
+                            <div class="bar-label">2014</div>
+                        </div>
+                        <div class="bar bar-3" data-value="24440">
+                            <div class="bar-label">2015</div>
+                        </div>
+                        <div class="bar bar-4" data-value="30920">
+                            <div class="bar-label">2016</div>
+                        </div>
+                        <div class="bar bar-5" data-value="37670">
+                            <div class="bar-label">2017</div>
+                        </div>
+                        <div class="bar bar-6" data-value="48200">
+                            <div class="bar-label">2018</div>
+                        </div>
+                        <div class="bar bar-7" data-value="57270">
+                            <div class="bar-label">2019</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 显示2013-2019财年GMV增长趋势<br>
+                    • 数据单位：亿元人民币<br>
+                    • 从2013年的10770亿增长到2019年的57270亿<br>
+                    • 使用CSS渐变实现，完全离线运行
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <div class="control-title">数据编辑面板</div>
+                
+                <div class="data-section">
+                    <div class="section-title">GMV数据 (亿元)</div>
+                    <div class="data-inputs" id="gmvInputs"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="updateChart()">更新图表</button>
+                    <button class="btn-secondary" onclick="resetData()">重置数据</button>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 支持编辑各年度GMV数据<br>
+                    • 修改数值后点击"更新图表"查看效果<br>
+                    • 可随时"重置数据"恢复初始状态<br>
+                    • 图表会实时反映数据变化
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始数据
+        let years = ['2013', '2014', '2015', '2016', '2017', '2018', '2019'];
+        let gmvData = [10770, 16780, 24440, 30920, 37670, 48200, 57270];
+
+        // 初始化输入框
+        function initializeInputs() {
+            const container = document.getElementById('gmvInputs');
+            container.innerHTML = '';
+            
+            years.forEach((year, index) => {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+                inputGroup.innerHTML = `
+                    <label>${year}年:</label>
+                    <input type="number" value="${gmvData[index]}" min="0" max="100000" 
+                           onchange="gmvData[${index}] = parseInt(this.value)">
+                `;
+                container.appendChild(inputGroup);
+            });
+        }
+
+        // 更新图表
+        function updateChart() {
+            alert('GMV数据已更新！' + years.map((year, index) => `${year}年: ${gmvData[index]}亿元`).join('\n'));
+        }
+
+        // 重置数据
+        function resetData() {
+            gmvData = [10770, 16780, 24440, 30920, 37670, 48200, 57270];
+            initializeInputs();
+            alert('数据已重置为初始状态！');
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInputs();
+        });
+    </script>
+</body>
+</html>

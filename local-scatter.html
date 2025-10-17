@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地散点图 - 速度距离数据编辑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .back-btn {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .chart-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+        }
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .control-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .data-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        .data-inputs {
+            display: grid;
+            gap: 12px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-group label {
+            min-width: 80px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 80px;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .data-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .scatter-chart {
+            width: 100%;
+            height: 350px;
+            position: relative;
+            border-left: 2px solid #ccc;
+            border-bottom: 2px solid #ccc;
+            margin: 20px 0;
+        }
+        .scatter-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #e74c3c;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+        .scatter-point:hover {
+            background: #c0392b;
+            transform: translate(-50%, -50%) scale(1.3);
+        }
+        .axis-label {
+            position: absolute;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .x-label { bottom: -25px; }
+        .y-label { left: -25px; transform: rotate(-90deg); }
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>本地散点图 - 速度距离数据编辑</h1>
+            <a href="local-index.html" class="back-btn">← 返回主页面</a>
+        </div>
+        
+        <div class="content">
+            <div class="chart-container">
+                <div class="chart-title">汽车速度与制动距离关系</div>
+                <div class="chart-wrapper">
+                    <div class="scatter-chart" id="scatterChart">
+                        <div class="scatter-point" style="left: 10%; top: 90%;" title="速度: 4mph, 距离: 2ft"></div>
+                        <div class="scatter-point" style="left: 20%; top: 80%;" title="速度: 7mph, 距离: 10ft"></div>
+                        <div class="scatter-point" style="left: 30%; top: 70%;" title="速度: 8mph, 距离: 22ft"></div>
+                        <div class="scatter-point" style="left: 40%; top: 60%;" title="速度: 9mph, 距离: 16ft"></div>
+                        <div class="scatter-point" style="left: 50%; top: 50%;" title="速度: 10mph, 距离: 26ft"></div>
+                        <div class="scatter-point" style="left: 60%; top: 40%;" title="速度: 11mph, 距离: 34ft"></div>
+                        <div class="scatter-point" style="left: 70%; top: 30%;" title="速度: 12mph, 距离: 17ft"></div>
+                        <div class="scatter-point" style="left: 80%; top: 20%;" title="速度: 13mph, 距离: 28ft"></div>
+                        <div class="scatter-point" style="left: 90%; top: 10%;" title="速度: 14mph, 距离: 14ft"></div>
+                        <div class="scatter-point" style="left: 95%; top: 5%;" title="速度: 15mph, 距离: 20ft"></div>
+                        
+                        <div class="axis-label x-label" style="left: 50%;">速度 (mph)</div>
+                        <div class="axis-label y-label" style="top: 50%;">制动距离 (ft)</div>
+                    </div>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 显示汽车速度与制动距离的关系<br>
+                    • 速度范围：4-15 mph<br>
+                    • 制动距离范围：2-34 ft<br>
+                    • 使用CSS绝对定位实现散点分布<br>
+                    • 完全离线运行，无需网络连接
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <div class="control-title">数据编辑面板</div>
+                
+                <div class="data-section">
+                    <div class="section-title">速度与距离数据</div>
+                    <div class="data-inputs" id="scatterInputs"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="updateChart()">更新图表</button>
+                    <button class="btn-secondary" onclick="resetData()">重置数据</button>
+                </div>
+                
+                <div class="data-info">
+                    <strong>数据说明：</strong><br>
+                    • 支持编辑速度和制动距离数据<br>
+                    • 修改数值后点击"更新图表"查看效果<br>
+                    • 可随时"重置数据"恢复初始状态<br>
+                    • 图表会实时反映数据变化
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始数据
+        let speeds = [4, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        let distances = [2, 10, 22, 16, 26, 34, 17, 28, 14, 20];
+
+        // 初始化输入框
+        function initializeInputs() {
+            const container = document.getElementById('scatterInputs');
+            container.innerHTML = '';
+            
+            speeds.forEach((speed, index) => {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+                inputGroup.innerHTML = `
+                    <label>点${index + 1}:</label>
+                    <input type="number" value="${speed}" min="0" max="50" placeholder="速度" 
+                           onchange="speeds[${index}] = parseInt(this.value)">
+                    <input type="number" value="${distances[index]}" min="0" max="100" placeholder="距离" 
+                           onchange="distances[${index}] = parseInt(this.value)">
+                `;
+                container.appendChild(inputGroup);
+            });
+        }
+
+        // 更新图表
+        function updateChart() {
+            alert('散点数据已更新！速度: ' + speeds.join(', ') + ' mph\n距离: ' + distances.join(', ') + ' ft');
+        }
+
+        // 重置数据
+        function resetData() {
+            speeds = [4, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            distances = [2, 10, 22, 16, 26, 34, 17, 28, 14, 20];
+            initializeInputs();
+            alert('数据已重置为初始状态！');
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInputs();
+        });
+    </script>
+</body>
+</html>
